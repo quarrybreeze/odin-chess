@@ -14,10 +14,11 @@ class Board
   end
 
   def display 
-    columns = "   a b c d e f g h "
+    # columns = "   a b c d e f g h "
+    columns = "   0 1 2 3 4 5 6 7 "
     puts columns
     for row in (7).downto(0)
-      puts "#{row+1} |" + 
+      puts "#{row} |" + 
       @tiles[0][row].symbol + "|" +
       @tiles[1][row].symbol + "|" +
       @tiles[2][row].symbol + "|" +
@@ -26,7 +27,7 @@ class Board
       @tiles[5][row].symbol + "|" +
       @tiles[6][row].symbol + "|" +
       @tiles[7][row].symbol + "|" +
-      " #{row+1}"
+      " #{row}"
     end
     puts columns
   end
