@@ -16,9 +16,8 @@ class Pawn < Piece
       #moving forward
       if @position.last == 1 
         valid_moves << [@position.first,@position.last+2]
-      else
-        valid_moves << [@position.first,@position.last+1]
       end
+      valid_moves << [@position.first,@position.last+1]
       #attacking diagonal
       valid_moves << [@position.first+1,@position.last+1]
       valid_moves << [@position.first-1,@position.last+1]
@@ -26,9 +25,8 @@ class Pawn < Piece
       #moving forward
       if @position.last == 6 
         valid_moves << [@position.first,@position.last-2]
-      else
-        valid_moves << [@position.first,@position.last-1]
       end
+      valid_moves << [@position.first,@position.last-1]
       #attacking diagonal
       valid_moves << [@position.first+1,@position.last-1]
       valid_moves << [@position.first-1,@position.last-1]
