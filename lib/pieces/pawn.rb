@@ -33,6 +33,7 @@ class Pawn < Piece
       valid_moves << [@position.first+1,@position.last-1]
       valid_moves << [@position.first-1,@position.last-1]
     end
+    return valid_moves
   end
 
 end

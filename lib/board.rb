@@ -32,18 +32,31 @@ class Board
   end
 
   def place_pieces #update with pieces as they are made.
+    @tiles[0][0] = Rook.new("white",[0,0])
+    @tiles[1][0] = Knight.new("white",[1,0])
+    @tiles[2][0] = Bishop.new("white",[2,0])
+    @tiles[3][0] = Queen.new("white",[3,0])
+    @tiles[4][0] = King.new("white",[4,0])
+    @tiles[5][0] = Bishop.new("white",[5,0])
+    @tiles[6][0] = Knight.new("white",[6,0])
+    @tiles[7][0] = Rook.new("white",[7,0])
+    @tiles[0][7] = Rook.new("black",[0,0])
+    @tiles[1][7] = Knight.new("black",[1,0])
+    @tiles[2][7] = Bishop.new("black",[2,0])
+    @tiles[3][7] = Queen.new("black",[3,0])
+    @tiles[4][7] = King.new("black",[4,0])
+    @tiles[5][7] = Bishop.new("black",[5,0])
+    @tiles[6][7] = Knight.new("black",[6,0])
+    @tiles[7][7] = Rook.new("black",[7,0])
     for i in 0..7
-      @tiles[i][0] = EmptyTile.new
       @tiles[i][1] = Pawn.new("white",[i,1])
       @tiles[i][2] = EmptyTile.new
       @tiles[i][3] = EmptyTile.new
       @tiles[i][4] = EmptyTile.new
       @tiles[i][5] = EmptyTile.new
       @tiles[i][6] = Pawn.new("black",[i,6])
-      @tiles[i][7] = EmptyTile.new
     end
   end
-
 end
 
 board = Board.new
