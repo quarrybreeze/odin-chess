@@ -8,6 +8,8 @@ require_relative 'pieces/empty_tile'
 
 class Board
   
+  attr_accessor :tiles
+
   def initialize
     @tiles = Array.new(8) { Array.new(8) {" "}} #format: [column][row]
     self.place_pieces
@@ -60,5 +62,5 @@ class Board
   end
 end
 
-board = Board.new
-board.display
+# board = Board.new
+# board.display
