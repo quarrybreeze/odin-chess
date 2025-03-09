@@ -77,6 +77,7 @@ class Game
 
   private
 
+
   def check?
     check = false
     checkmate = false
@@ -92,8 +93,20 @@ class Game
     }
     king_piece = king.first
     king_position = king_piece.position
+    
+    coordinates = []
+    for row in 0..7
+      for column in 0..7
+        coordinates << [row,column]
+      end
+    end
 
-    potential_attackers = array_of_pieces.select { |element|
+
+
+
+
+    #is the king in check?
+    king_attackers = array_of_pieces.select { |element|
     element.color == player_color &&
     element.valid_moves.include?(king_position) &&
     self.jump?(element,king_position) == false  &&    #logic to avoid jumps
@@ -102,17 +115,49 @@ class Game
     element.position.first == king_position.first-1)
     }
 
-    if potential_attackers.length > 0
-      puts "Check"
-    else
-      puts "No check (for debugging)"
+    #is the king in checkmate?
+    king_moves = king_piece.valid_moves
+    king_moves = king_moves.select { |element| 
+    @board.pick_tile(element.first,element.last).symbol == " " ||
+    @board.pick_tile(element.first,element.last).color == player_color
+    }
+
+    unsafe_moves = []
+
+    king_moves.each do |move|
+      is_attacked = array_of_pieces.any? do |element|
+        next if element.is_a?(EmptyTile)
+        element.color != opposite_color &&  # Enemy pieces only
+        element.valid_moves.include?(move) &&
+        self.jump?(element, move) == false &&     # Ensure no jumping
+        (element.name != "pawn" ||        # Special pawn attack logic
+        element.position.first == move.first + 1 ||
+        element.position.first == move.first - 1)
+      end
+      if is_attacked
+        unsafe_moves << move
+      end
+    end
+    # p unsafe_moves
+    # p king_moves
+    safe_moves = king_moves - unsafe_moves
+
+    # p "King's safe moves: #{safe_moves}"
+
+    if king_attackers.length > 0
+      check = true
     end
 
+    if check == true && safe_moves.length == 0
+      checkmate = true
+      @gameover = true
+    end
 
-    #take all objects of the current player
-    #check if 
-    #1: they can attack the king
-    #2: can they attack every space the king can move to.
+    if checkmate == true
+      puts "Checkmate"
+    elsif check == true
+      puts "Check"
+    end
     
   end
 
