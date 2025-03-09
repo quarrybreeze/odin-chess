@@ -31,6 +31,8 @@ class Game
     current_player = @players[0].color
     x_coord = coordinates.first
     y_coord = coordinates.last
+    target_tile = @board.pick_tile(x_coord,y_coord)
+    target_tile_color = @board.pick_tile(x_coord,y_coord).color
 
     matching_pieces = []
 
@@ -38,13 +40,9 @@ class Game
     matching_pieces = array_of_pieces.select { |element|
       element.color == current_player &&
       element.name == name &&
-      element.valid_moves.include?(coordinates)
+      element.valid_moves.include?(coordinates) &&
+      self.jump?(element,coordinates) == false   #logic to avoid jumps
     }
-    # this is where i should add logic for pawn attacks and collissions
-
-
-    target_tile = @board.pick_tile(coordinates.first,coordinates.last)
-    target_tile_color = @board.pick_tile(coordinates.first,coordinates.last).color
 
     #logic to avoid pawns moving diagonally without attacking
     if name == "pawn" && target_tile.symbol == " "
@@ -67,30 +65,56 @@ class Game
         p piece.position
       end
       specific_piece = gets.chomp.split(",").map(&:to_i)
-      specific_piece_x = specific_piece.first
-      specific_piece_y = specific_piece.last
-      if jump?(@board.pick_tile(specific_piece_x,specific_piece_y),coordinates)
-        puts "The #{name} cannot jump over pieces. Please choose a valid move"
-        self.player_turn
-      else
-        @board.move(specific_piece,coordinates)
-      end
+      @board.move(specific_piece,coordinates)
     elsif matching_pieces.length == 0 #if invalid move, loop
       p "The #{name}, cannot move there. Please choose a valid move"
       self.player_turn
     else
       current_tile = matching_pieces.first.position
-      piece = matching_pieces.first
-      if jump?(piece,coordinates)
-        puts "The #{name} cannot jump over pieces. Please choose a valid move"
-        self.player_turn
-      else
-        @board.move(current_tile,coordinates)
-      end
+      @board.move(current_tile,coordinates)
     end
   end
 
   private
+
+  def check?
+    check = false
+    checkmate = false
+
+    player_color = @players[0].color
+    opposite_color = @players[1].color
+    array_of_pieces = @board.tiles.flatten(2)
+
+    #get king position
+    king = array_of_pieces.select { |element|
+    element.color == opposite_color &&
+    element.name == "king"
+    }
+    king_piece = king.first
+    king_position = king_piece.position
+
+    potential_attackers = array_of_pieces.select { |element|
+    element.color == player_color &&
+    element.valid_moves.include?(king_position) &&
+    self.jump?(element,king_position) == false  &&    #logic to avoid jumps
+    (element.name != "pawn" ||                        #logic to include only pawns that are diagonal from king
+    element.position.first == king_position.first+1 ||
+    element.position.first == king_position.first-1)
+    }
+
+    if potential_attackers.length > 0
+      puts "Check"
+    else
+      puts "No check (for debugging)"
+    end
+
+
+    #take all objects of the current player
+    #check if 
+    #1: they can attack the king
+    #2: can they attack every space the king can move to.
+    
+  end
 
   def jump?(object,target)
     jump = false
@@ -202,6 +226,7 @@ class Game
     while @gameover == false
       self.player_turn
       self.king?
+      self.check?
       self.switch_player
     end
 
