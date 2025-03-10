@@ -20,6 +20,10 @@ class Board
     @tiles[x][y]
   end
 
+  def tiles
+    @tiles
+  end
+
   def generate_threat_white
     all_objects = @tiles.flatten(2)
     

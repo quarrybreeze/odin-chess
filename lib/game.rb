@@ -8,8 +8,18 @@ class Game
     @board = Board.new
     @players = []
     @gameover = false
-    self.play_game
-    # p self.jump?(@board.pick_tile(2,0),[0,2])
+
+    if File.exist?("savedgame.dat")
+      puts "Type new to start new game. Type load to load old save."
+      input = gets.chomp.downcase
+      if (input == "load")
+        self.load_game
+      else
+        self.play_game
+      end
+    else
+      self.play_game
+    end
   end
 
   def display
@@ -235,15 +245,20 @@ class Game
   def player_turn
     current_player = @players[0].color
     puts "Current move: #{current_player}"
+    puts "Type save to save the game and exit."
     puts "Provide a move in the format: {piece} to X,Y"
-    input = gets.chomp
-    split_input = input.split(" to ")
-    name = split_input.first.downcase
-    coordinates = split_input.last.split(",").map(&:to_i)
-    # p name
-    # p coordinates
-    self.make_move(name,coordinates)
-    self.display
+    input = gets.downcase.chomp
+    if input == "save"
+      self.save_game
+    else
+      split_input = input.split(" to ")
+      name = split_input.first.downcase
+      coordinates = split_input.last.split(",").map(&:to_i)
+      # p name
+      # p coordinates
+      self.make_move(name,coordinates)
+      self.display
+    end
   end
 
   def play_game
@@ -258,11 +273,47 @@ class Game
         @board.generate_threat_black
       end
       self.king?
-      # self.check?
       self.checkmate?
       self.switch_player
+      # self.save_game
     end
 
+  end
+
+  def save_game
+    File.open("savedgame.dat", "wb") do |file|
+      Marshal.dump({
+        gameover: @gameover,
+        players: @players,
+        board_tiles: @board.tiles
+      }, file)
+    end
+    puts "Game saved. Exiting..."
+    exit
+  end
+
+  def load_game
+    puts "Loading save file..."
+    File.open("savedgame.dat", "rb") do |file|  # Use binary mode ("rb") for Marshal
+      data = Marshal.load(file)
+      @gameover = data[:gameover]
+      @players = data[:players]
+      @board.tiles = data[:board_tiles]
+    end
+    puts "Game loaded successfully."
+    @board.display
+    while @gameover == false
+      self.player_turn
+      if @players[0].color == "white"
+        @board.generate_threat_white
+      else
+        @board.generate_threat_black
+      end
+      self.king?
+      self.checkmate?
+      self.switch_player
+      self.save_game
+    end
   end
 
   def create_player
@@ -292,7 +343,7 @@ class Game
 
 end
 
-game = Game.new
+# game = Game.new
 # game.display
 # game.make_move("pawn",[0,3])
 # game.display
