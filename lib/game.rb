@@ -118,6 +118,15 @@ class Game
     my_king = my_king.first
   end
 
+  def their_king
+    array_of_pieces = @board.tiles.flatten(2)
+    their_king = array_of_pieces.select {|element|
+    element.color == @players[1].color &&
+    element.name == "king"
+    }
+    their_king = their_king.first
+  end
+
   def check?
     check = false
     opposite_color = @players[1].color
@@ -153,10 +162,67 @@ class Game
         @board.pick_tile(coord.first,coord.last).threatend_by_black? == false
       end
       }
-      if king_moves.length == 0
+      if king_moves.length == 0 && !self.opponent_can_parry? #need to add: AND no parry moves
         checkmate = true
       end
     end
+  
+  def opponent_can_parry? #does the opponent have parry moves?
+    opponent_can_parry = false
+    parry_moves = []
+    player_color = @players[0].color
+    opposite_color = @players[1].color
+    array_of_pieces = @board.tiles.flatten(2)
+
+    opposite_color_pieces = array_of_pieces.select {|piece| piece.color == opposite_color}
+    opposite_color_pieces.each do |piece|
+      valid_moves = piece.valid_moves
+      valid_moves = valid_moves.select { |move| 
+      @board.jump?(piece,move) == false &&
+      @board.pick_tile(move.first,move.last).color != opposite_color &&
+      (piece.name != "pawn" ||
+      if @board.pick_tile(move.first,move.last).symbol == " "
+        piece.position.first == move.first
+      else
+        piece.position.first == move.first+1 ||
+        piece.position.first == move.first-1
+      end
+      )
+      }
+
+      valid_moves.each do |move|
+        target_object = @board.pick_tile(move.first,move.last)
+        
+        original_spot = piece.position
+        @board.move(original_spot,move)
+
+        if @players[0].color == "black"
+          @board.generate_threat_black
+        else
+          @board.generate_threat_white
+        end
+
+        if !self.their_king.threatend?
+          parry_moves << move
+        end
+
+        @board.move(move,original_spot)
+        @board.tiles[move.first][move.last] = target_object
+        if @players[0].color == "black"
+          @board.generate_threat_black
+        else
+          @board.generate_threat_white
+        end
+        
+      end
+    end
+    parry_moves = parry_moves.uniq
+    # puts "#{opposite_color} parry options: #{parry_moves}"
+    if parry_moves.length > 0
+      opponent_can_parry = true
+    end
+    return opponent_can_parry
+  end
 
     if checkmate
       puts "Checkmate. Game over."
