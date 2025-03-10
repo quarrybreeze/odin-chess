@@ -7,6 +7,7 @@ class Piece
     @name = name
     @color = color
     @position = position
+    @threatend = false
   end
 
   def move(new_position)
@@ -19,6 +20,18 @@ class Piece
 
   def color
     @color
+  end
+
+  def threatend?
+    @threatend
+  end
+
+  def threaten
+    @threatend = true
+  end
+
+  def evade
+    @threatend = false
   end
 
 end

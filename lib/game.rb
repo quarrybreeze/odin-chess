@@ -41,7 +41,7 @@ class Game
       element.color == current_player &&
       element.name == name &&
       element.valid_moves.include?(coordinates) &&
-      self.jump?(element,coordinates) == false   #logic to avoid jumps
+      @board.jump?(element,coordinates) == false   #logic to avoid jumps
     }
 
     #logic to avoid pawns moving diagonally without attacking
@@ -77,173 +77,74 @@ class Game
 
   private
 
-
   def check?
     check = false
-    checkmate = false
-
     player_color = @players[0].color
     opposite_color = @players[1].color
     array_of_pieces = @board.tiles.flatten(2)
-
-    #get king position
     king = array_of_pieces.select { |element|
-    element.color == opposite_color &&
-    element.name == "king"
+        element.color == opposite_color &&
+        element.name == "king"
     }
-    king_piece = king.first
-    king_position = king_piece.position
-    
-    coordinates = []
-    for row in 0..7
-      for column in 0..7
-        coordinates << [row,column]
-      end
-    end
-
-
-
-
-
-    #is the king in check?
-    king_attackers = array_of_pieces.select { |element|
-    element.color == player_color &&
-    element.valid_moves.include?(king_position) &&
-    self.jump?(element,king_position) == false  &&    #logic to avoid jumps
-    (element.name != "pawn" ||                        #logic to include only pawns that are diagonal from king
-    element.position.first == king_position.first+1 ||
-    element.position.first == king_position.first-1)
-    }
-
-    #is the king in checkmate?
-    king_moves = king_piece.valid_moves
-    king_moves = king_moves.select { |element| 
-    @board.pick_tile(element.first,element.last).symbol == " " ||
-    @board.pick_tile(element.first,element.last).color == player_color
-    }
-
-    unsafe_moves = []
-
-    king_moves.each do |move|
-      is_attacked = array_of_pieces.any? do |element|
-        next if element.is_a?(EmptyTile)
-        element.color != opposite_color &&  # Enemy pieces only
-        element.valid_moves.include?(move) &&
-        self.jump?(element, move) == false &&     # Ensure no jumping
-        (element.name != "pawn" ||        # Special pawn attack logic
-        element.position.first == move.first + 1 ||
-        element.position.first == move.first - 1)
-      end
-      if is_attacked
-        unsafe_moves << move
-      end
-    end
-    # p unsafe_moves
-    # p king_moves
-    safe_moves = king_moves - unsafe_moves
-
-    # p "King's safe moves: #{safe_moves}"
-
-    if king_attackers.length > 0
+    if king.first.threatend?
+      # puts "Check"
       check = true
     end
-
-    if check == true && safe_moves.length == 0
-      checkmate = true
-      @gameover = true
-    end
-
-    if checkmate == true
-      puts "Checkmate"
-    elsif check == true
-      puts "Check"
-    end
-    
+    return check
   end
 
-  def jump?(object,target)
-    jump = false
-    tile_queue = []
+  def checkmate?
+    checkmate = false
+    check = self.check?
+    if check
+      player_color = @players[0].color
+      opposite_color = @players[1].color
+      array_of_pieces = @board.tiles.flatten(2)
 
-    start_x = object.position.first
-    start_y = object.position.last
-    target_x = target.first
-    target_y = target.last
-
-    if (start_y == target_y && #right
-      target_x > start_x)
-      # p "right"
-      for x in start_x..target_x
-        tile_queue << [x, start_y]
+      king = array_of_pieces.select { |element|
+          element.color == opposite_color &&
+          element.name == "king"
+      }
+      king = king.first
+      king_moves = king.valid_moves.select { |coord| 
+      @board.pick_tile(coord.first,coord.last).symbol == " " &&
+      if player_color == "white"
+        @board.pick_tile(coord.first,coord.last).threatend_by_white? == false
+      else
+        @board.pick_tile(coord.first,coord.last).threatend_by_black? == false
       end
-    elsif (start_y == target_y && #left
-          target_x < start_x)
-          # p "left"
-      for x in target_x..start_x
-        tile_queue << [x, start_y]
-      end
-    elsif (start_x == target_x && #up
-          target_y > start_y)
-          # p "up"
-      for y in start_y..target_y
-        tile_queue << [start_x, y]
-      end
-    elsif (start_x == target_x && #down
-          target_y < start_y)
-          # p "down"
-      for y in target_y..start_y
-        tile_queue << [start_x, y]
-      end
-    elsif (start_y < target_y && #upright
-        start_x < target_x)
-        diag_y = start_y
-      # p "upright"
-      for x in start_x..target_x
-        tile_queue << [x,diag_y]
-        diag_y += 1
-      end
-    elsif (start_y < target_y && #upleft
-      start_x > target_x)
-      # p "upleft"
-      diag_x = start_x
-      for y in start_y..target_y
-        tile_queue << [diag_x,y]
-        diag_x -= 1
-      end
-    elsif (start_y > target_y && #downright
-      start_x < target_x)
-      diag_y = start_y
-      # p "downright"
-      for x in start_x..target_x
-        tile_queue << [x,diag_y]
-        diag_y -= 1
-      end
-    elsif (start_y > target_y && #downleft
-      start_x > target_x)
-      diag_x = target_x
-      # p "downleft"
-      for y in target_y..start_y
-        tile_queue << [diag_x,y]
-        diag_x += 1
+      }
+      if king_moves.length == 0
+        checkmate = true
       end
     end
 
-    tile_queue.pop
-    tile_queue.shift
-
-    occupied_tiles = tile_queue.select { |element| 
-    @board.pick_tile(element.first,element.last).symbol != " " 
-    }
-
-    if occupied_tiles.length > 0
-      jump = true
+    if checkmate
+      puts "Checkmate. Game over."
+      @gameover = true
+    elsif check
+      puts "Check"
     end
+        # opposite_color_pieces = @array_of_pieces.select {|piece| piece.color == opposite_color}
+    # parry_coords = []
+    # opposite_color_pieces.each do |piece|
+    #   valid_moves = piece.valid_moves
+    #   valid_moves = valid_moves.select {|move|
+    #     @board.jump?(piece,move) == false &&
+    #     @board.pick_tile(move.first,move.last).color != player_color &&
+    #     (piece.name != "pawn" ||
+    #     #or clause 1
+    #     (@board.pick_tile(move.first,move.last).symbol != " " &&
+    #     (piece.position.first ==move.first+1 ||
+    #     piece.position.first == move.first-1)) ||
+    #     #or clause 2
+    #     (@board.pick_tile(move.first,move.last).symbol == " " &&
+    #     piece.position.first ==move.first))
+    #   }
+    #   parry_coords << valid_moves
+    # end
 
-    if object.name == "knight"
-      jump = false
-    end
-
-    return jump
+    # parry_coords = parry_coords.flatten(1).uniq
   end
 
   def player_turn
@@ -260,18 +161,20 @@ class Game
     self.display
   end
 
-
-  
-
-
   def play_game
     self.create_player
     self.create_computer
     self.white_first
     while @gameover == false
       self.player_turn
+      if @players[0].color == "white"
+        @board.generate_threat_white
+      else
+        @board.generate_threat_black
+      end
       self.king?
       self.check?
+      self.checkmate?
       self.switch_player
     end
 
