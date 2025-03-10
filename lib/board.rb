@@ -58,10 +58,10 @@ class Board
         @tiles[coord.first][coord.last].threaten
       end
     end
-    open_tiles_threatened_by_white = open_tiles.select {|tile| tile.threatend_by_white?}
-    black_pieces_threatened = black_objects.select {|piece| piece.threatend?}
+    # open_tiles_threatened_by_white = open_tiles.select {|tile| tile.threatend_by_white?}
+    # black_pieces_threatened = black_objects.select {|piece| piece.threatend?}
     # puts "Open tiles threatened by white: #{open_tiles_threatened_by_white}"
-    puts "Black pieces threatened by white: #{black_pieces_threatened}"
+    # puts "Black pieces threatened by white: #{black_pieces_threatened}"
     # puts "Coords threatened by white: #{coord_threatened_by_white}"
   end
 
@@ -103,10 +103,10 @@ class Board
         @tiles[coord.first][coord.last].threaten
       end
     end
-    open_tiles_threatened_by_black = open_tiles.select {|tile| tile.threatend_by_black?}
-    white_pieces_threatened = white_objects.select {|piece| piece.threatend?}
+    # open_tiles_threatened_by_black = open_tiles.select {|tile| tile.threatend_by_black?}
+    # white_pieces_threatened = white_objects.select {|piece| piece.threatend?}
     # puts "Open tiles threatened by black: #{open_tiles_threatened_by_black}"
-    puts "White pieces threatened by black: #{white_pieces_threatened}"
+    # puts "White pieces threatened by black: #{white_pieces_threatened}"
     # puts "Coords threatened by white: #{coord_threatened_by_black}"
   end
 

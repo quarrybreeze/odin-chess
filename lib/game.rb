@@ -66,20 +66,60 @@ class Game
       end
       specific_piece = gets.chomp.split(",").map(&:to_i)
       @board.move(specific_piece,coordinates)
+      if @players[0].color == "white"
+        @board.generate_threat_black
+      else
+        @board.generate_threat_white
+      end
+      
+      if self.my_king.threatend?
+        puts "You are checked and need to parry. Please move another piece."
+        @board.move(coordinates,specific_piece)
+        if @players[0].color == "white"
+          @board.generate_threat_black
+        else
+          @board.generate_threat_white
+        end
+        self.player_turn
+      end
     elsif matching_pieces.length == 0 #if invalid move, loop
       p "The #{name}, cannot move there. Please choose a valid move"
       self.player_turn
     else
       current_tile = matching_pieces.first.position
       @board.move(current_tile,coordinates)
+      if @players[0].color == "white"
+        @board.generate_threat_black
+      else
+        @board.generate_threat_white
+      end
+      
+      if self.my_king.threatend?
+        puts "You are checked and need to parry. Please move another piece."
+        @board.move(coordinates,current_tile)
+        if @players[0].color == "white"
+          @board.generate_threat_black
+        else
+          @board.generate_threat_white
+        end
+        self.player_turn
+      end
     end
   end
 
   private
 
+  def my_king
+    array_of_pieces = @board.tiles.flatten(2)
+    my_king = array_of_pieces.select {|element|
+    element.color == @players[0].color &&
+    element.name == "king"
+    }
+    my_king = my_king.first
+  end
+
   def check?
     check = false
-    player_color = @players[0].color
     opposite_color = @players[1].color
     array_of_pieces = @board.tiles.flatten(2)
     king = array_of_pieces.select { |element|
@@ -87,7 +127,6 @@ class Game
         element.name == "king"
     }
     if king.first.threatend?
-      # puts "Check"
       check = true
     end
     return check
@@ -125,26 +164,6 @@ class Game
     elsif check
       puts "Check"
     end
-        # opposite_color_pieces = @array_of_pieces.select {|piece| piece.color == opposite_color}
-    # parry_coords = []
-    # opposite_color_pieces.each do |piece|
-    #   valid_moves = piece.valid_moves
-    #   valid_moves = valid_moves.select {|move|
-    #     @board.jump?(piece,move) == false &&
-    #     @board.pick_tile(move.first,move.last).color != player_color &&
-    #     (piece.name != "pawn" ||
-    #     #or clause 1
-    #     (@board.pick_tile(move.first,move.last).symbol != " " &&
-    #     (piece.position.first ==move.first+1 ||
-    #     piece.position.first == move.first-1)) ||
-    #     #or clause 2
-    #     (@board.pick_tile(move.first,move.last).symbol == " " &&
-    #     piece.position.first ==move.first))
-    #   }
-    #   parry_coords << valid_moves
-    # end
-
-    # parry_coords = parry_coords.flatten(1).uniq
   end
 
   def player_turn
@@ -173,7 +192,7 @@ class Game
         @board.generate_threat_black
       end
       self.king?
-      self.check?
+      # self.check?
       self.checkmate?
       self.switch_player
     end
